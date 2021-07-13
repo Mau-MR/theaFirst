@@ -14,16 +14,21 @@ import (
 )
 
 func ElasticSearchClient(l *log.Logger) *elasticsearch.Client {
+	//The retrieve of the credentials
+	address := os.Getenv("ELASTICURI")
+	username := os.Getenv("EUSER")
+	password := os.Getenv("EPASSWORD")
+	//The configuration  of the client
 	cfg := elasticsearch.Config{
 		Addresses: []string{
-			"https://localhost:9200",
+			address,
 		},
-		Username: "thea",
-		Password: "thea88!",
+		Username: username,
+		Password: password,
 		Transport: &http.Transport{
 			MaxIdleConnsPerHost:   10,
-			ResponseHeaderTimeout: 10*time.Second,
-			DialContext:           (&net.Dialer{Timeout: 10*time.Second}).DialContext,
+			ResponseHeaderTimeout: 10 * time.Second,
+			DialContext:           (&net.Dialer{Timeout: 10 * time.Second}).DialContext,
 			TLSClientConfig: &tls.Config{
 				MaxVersion:         tls.VersionTLS11,
 				InsecureSkipVerify: true,
@@ -59,8 +64,8 @@ func main() {
 	defer mongoClient.Disconnect(*ctx)
 	elasticSearchClient := ElasticSearchClient(l)
 
-	res,err:= elasticSearchClient.Info()
-	if err!=nil{
+	res, err := elasticSearchClient.Info()
+	if err != nil {
 		l.Fatal(err)
 	}
 	l.Println(res)
