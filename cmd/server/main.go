@@ -3,13 +3,16 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"github.com/Mau-MR/theaFirst/handlers"
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
 	"time"
 )
 
@@ -63,10 +66,35 @@ func main() {
 	mongoClient, ctx := MongoClient(l)
 	defer mongoClient.Disconnect(*ctx)
 	elasticSearchClient := ElasticSearchClient(l)
+	costumers := handlers.NewCostumers(l,mongoClient,elasticSearchClient)
+	mux:= mux.NewRouter()
+	postRouter := mux.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc("/costumers", costumers.CreateCostumer)
 
-	res, err := elasticSearchClient.Info()
-	if err != nil {
-		l.Fatal(err)
+	server := http.Server{
+		Addr: "localhost:8080",
+		Handler: mux,
+		ErrorLog: l,
+		ReadTimeout: 10*time.Second,
+		WriteTimeout: 10*time.Second,
+		IdleTimeout: 100*time.Second,
 	}
-	l.Println(res)
+	go  func(){
+		l.Println("Starting server on port 8080")
+		if err:= server.ListenAndServe(); err !=nil{
+			l.Fatal("Error starting the server: ", err)
+		}
+	}()
+	//get sigterm or interrupt to gracefully end the server
+	c:= make(chan os.Signal,1)
+	signal.Notify(c,os.Interrupt)
+	signal.Notify(c,os.Kill)
+	//Block until signal is received
+	sig:= <-c
+	l.Println("Got signal", sig)
+	//shutdonw the server and waiting 30 seconds for current operations to complete
+	*ctx,_ = context.WithTimeout(context.Background(),30*time.Second)
+	if err := server.Shutdown(*ctx); err!=nil{
+		l.Fatal("Error shutting down the server",err)
+	}
 }
