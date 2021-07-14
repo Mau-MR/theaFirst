@@ -53,23 +53,24 @@ func (mw *MongoWrapper) Transaction(callback callback) error {
 	wc := writeconcern.New(writeconcern.WMajority())
 	rc := readconcern.Snapshot()
 	txnOpts := options.Transaction().SetWriteConcern(wc).SetReadConcern(rc)
-	session,err := mw.client.StartSession()
-	if err !=nil{
+	session, err := mw.client.StartSession()
+	if err != nil {
 		mw.l.Println("Unable to start the session")
 		return err
 	}
 	defer session.EndSession(context.Background())
 	//TODO: CHECK WHAT RETURNS THIS EXPRESION
 	mw.l.Println("Starting transaction...")
-	_,err = session.WithTransaction(context.Background(),callback,txnOpts)
-	if err!=nil{
+	_, err = session.WithTransaction(context.Background(), callback, txnOpts)
+	if err != nil {
 		mw.l.Println("Transaction failed")
 		return err
 	}
 	mw.l.Println("Successful transaction!")
 	return nil
 }
+
 //InsertStructTo inserts and struct on the specified db and collection returns the response of the insertion and an error in case of failure
-func (mw *MongoWrapper) InsertStructTo(i interface{},db, collection string)(*mongo.InsertOneResult,error){
-	return mw.client.Database(db).Collection(collection).InsertOne(context.Background(),i)
+func (mw *MongoWrapper) InsertStructTo(i interface{}, db, collection string) (*mongo.InsertOneResult, error) {
+	return mw.client.Database(db).Collection(collection).InsertOne(context.Background(), i)
 }

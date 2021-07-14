@@ -5,6 +5,7 @@ import (
 	"github.com/go-playground/validator"
 	"net/http"
 )
+
 //ALL THE CREDITS TO NICHOLAS JACKSON <3
 
 // Validation contains
@@ -33,8 +34,8 @@ func (v *Validation) Validate(i interface{}) ValidationErrors {
 	}
 	return returnErrs
 }
-func (v *Validation) ValidateRequest(i interface{}, rw http.ResponseWriter) error  {
-	errs :=  v.Validate(i)
+func (v *Validation) ValidateRequest(i interface{}, rw http.ResponseWriter) error {
+	errs := v.Validate(i)
 	if len(errs) != 0 {
 		// return the validation messages as an array
 		rw.WriteHeader(http.StatusUnprocessableEntity)
@@ -43,4 +44,3 @@ func (v *Validation) ValidateRequest(i interface{}, rw http.ResponseWriter) erro
 	}
 	return nil
 }
-

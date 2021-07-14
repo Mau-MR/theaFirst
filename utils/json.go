@@ -16,13 +16,13 @@ func FromJSON(i interface{}, r io.Reader) error {
 	return d.Decode(i)
 }
 
-func ParseRequest(i interface{}, r io.Reader, rw http.ResponseWriter) error{
-	err :=FromJSON(i,r)
-	if err !=nil  {
+func ParseRequest(i interface{}, r io.Reader, rw http.ResponseWriter) error {
+	err := FromJSON(i, r)
+	if err != nil {
 		rw.WriteHeader(http.StatusBadRequest)
 		ToJSON(GenericError{
 			Message: fmt.Sprintf("Bad Format for type: %T", i),
-		},rw)
+		}, rw)
 		return err
 	}
 	return nil

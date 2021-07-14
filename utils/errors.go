@@ -8,14 +8,13 @@ import (
 type GenericError struct {
 	Message string `json:"message"`
 }
-type ValErrors struct{
-	Messages []string  `json:"messages"`
+type ValErrors struct {
+	Messages []string `json:"messages"`
 }
 
 type ValidationError struct {
 	validator.FieldError
 }
-
 
 func (v ValidationError) Error() string {
 	return fmt.Sprintf(
