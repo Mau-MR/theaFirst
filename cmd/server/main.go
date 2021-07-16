@@ -23,9 +23,7 @@ func main() {
 	//The logger creation
 	l := log.New(os.Stdout, "[Thea-API] ", log.LstdFlags)
 	//DB Connections
-	l.Println(mongoURI)
-
-	mongoWrapper, err := DB.NewMongoWrapper(mongoURI, l)
+	mongoWrapper, err := DB.NewMongoWrapper("Thea", mongoURI, l)
 	if err != nil {
 		l.Fatal("Unable to connect to MongoDB")
 	}

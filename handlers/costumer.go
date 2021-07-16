@@ -16,11 +16,10 @@ type Costumers struct {
 
 func NewCostumers(logger *log.Logger, mongoWrapper *DB.MongoWrapper, elasticSearchWrapper *DB.ElasticWrapper, validation *utils.Validation) *Costumers {
 	//NOTE: FOR THIS TIME THIS IS GOING TO BE HARD CODED BUT IT CAN BE DYNAMICALLY PROVISIONED
-	db := "Thea" //TODO: ADD HERE DINAMIC PROVISION of the db
 	collection := "costumers"
 	return &Costumers{
 		l:          logger,
-		CostumerDB: data.NewCostumerDB(mongoWrapper, elasticSearchWrapper, db, collection),
+		CostumerDB: data.NewCostumerDB(mongoWrapper, elasticSearchWrapper, collection),
 		validation: validation,
 	}
 }

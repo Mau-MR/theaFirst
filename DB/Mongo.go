@@ -13,11 +13,12 @@ import (
 type MongoWrapper struct {
 	client *mongo.Client
 	l      *log.Logger
+	db string
 }
 type callback func(mongo.SessionContext) (interface{}, error)
 
 //NewMongoWrapper gets the mongo URI for a db and returns a MongoWraper with a client inside and a error in case of the failure of the connection
-func NewMongoWrapper(cred string, logger *log.Logger) (*MongoWrapper, error) {
+func NewMongoWrapper(db,cred string, logger *log.Logger) (*MongoWrapper, error) {
 	mongoClient, err := mongoClient(cred)
 	if err != nil {
 		return nil, err
@@ -25,6 +26,7 @@ func NewMongoWrapper(cred string, logger *log.Logger) (*MongoWrapper, error) {
 	return &MongoWrapper{
 		client: mongoClient,
 		l:      logger,
+		db: db,
 	}, nil
 }
 func (m *MongoWrapper) Disconnect(context context.Context) error {
@@ -59,6 +61,7 @@ func (mw *MongoWrapper) Transaction(callback callback) error {
 		return err
 	}
 	defer session.EndSession(context.Background())
+
 	//TODO: CHECK WHAT RETURNS THIS EXPRESION
 	mw.l.Println("Starting transaction...")
 	_, err = session.WithTransaction(context.Background(), callback, txnOpts)
@@ -71,6 +74,6 @@ func (mw *MongoWrapper) Transaction(callback callback) error {
 }
 
 //InsertStructTo inserts and struct on the specified db and collection returns the response of the insertion and an error in case of failure
-func (mw *MongoWrapper) InsertStructTo(i interface{}, db, collection string) (*mongo.InsertOneResult, error) {
-	return mw.client.Database(db).Collection(collection).InsertOne(context.Background(), i)
+func (mw *MongoWrapper) InsertStructTo(i interface{},ctx *mongo.SessionContext, collection string) (*mongo.InsertOneResult, error) {
+	return mw.client.Database(mw.db).Collection(collection).InsertOne(*ctx, i)
 }

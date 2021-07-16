@@ -1,7 +1,7 @@
 package data
 
 type SuccessfulRequest struct {
-	Done bool `json: "done"`
+	Done bool `json:"done"`
 	//On time.Time
 }
 
