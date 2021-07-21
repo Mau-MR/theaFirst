@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"flag"
+	"fmt"
 	"github.com/Mau-MR/theaFirst/DB"
 	"github.com/Mau-MR/theaFirst/handlers"
 	"github.com/Mau-MR/theaFirst/utils"
@@ -20,14 +22,18 @@ func main() {
 	username := os.Getenv("EUSER")
 	password := os.Getenv("EPASSWORD")
 
+	port := flag.Int("port", 0, "The server port")
+	flag.Parse()
+
 	//The logger creation
-	l := log.New(os.Stdout, "[Thea-API] ", log.LstdFlags)
+	l := log.New(os.Stdout, "[Keybons-System] ", log.LstdFlags)
 	//DB Connections
-	mongoWrapper, err := DB.NewMongoWrapper("Thea", mongoURI, l)
+	mongoClient, err := DB.NewMongoClient(mongoURI)
+	defer mongoClient.Disconnect(context.TODO()) //TODO: handle err
 	if err != nil {
 		l.Fatal("Unable to connect to MongoDB")
 	}
-	defer mongoWrapper.Disconnect(context.TODO())
+	mongoWrapper := DB.NewMongoWrapper("Thea", mongoClient)
 	elasticSearchWrapper, err := DB.NewElasticWrapper(address, username, password, l)
 	if err != nil {
 		l.Fatal("Unable to connect to ElasticSearch: ", err)
@@ -45,12 +51,14 @@ func main() {
 	postRouter := mux.Methods(http.MethodPost).Subrouter()
 	postRouter.HandleFunc("/costumers", costumers.CreateCostumer)
 	//Get router
+	getRouter := mux.Methods(http.MethodGet).Subrouter()
+	getRouter.HandleFunc("/costumers", costumers.SearchCostumer)
 	//Update router
 
 	//server related configuration
 	server := http.Server{
 		//TODO: GET THE PORT FROM ENVIRONMENT
-		Addr:         "localhost:8080",
+		Addr:         fmt.Sprintf("localhost:%d", *port),
 		Handler:      mux,
 		ErrorLog:     l,
 		ReadTimeout:  10 * time.Second,
@@ -58,7 +66,7 @@ func main() {
 		IdleTimeout:  100 * time.Second,
 	}
 	go func() {
-		l.Println("Starting server on port 8080")
+		l.Println("Starting server on port ", *port)
 		if err := server.ListenAndServe(); err != nil {
 			l.Fatal("Error starting the server: ", err)
 		}

@@ -16,10 +16,9 @@ type Costumers struct {
 
 func NewCostumers(logger *log.Logger, mongoWrapper *DB.MongoWrapper, elasticSearchWrapper *DB.ElasticWrapper, validation *utils.Validation) *Costumers {
 	//NOTE: FOR THIS TIME THIS IS GOING TO BE HARD CODED BUT IT CAN BE DYNAMICALLY PROVISIONED
-	collection := "costumers"
 	return &Costumers{
 		l:          logger,
-		CostumerDB: data.NewCostumerDB(mongoWrapper, elasticSearchWrapper, collection),
+		CostumerDB: data.NewCostumerDB(mongoWrapper, elasticSearchWrapper),
 		validation: validation,
 	}
 }
@@ -48,5 +47,27 @@ func (c *Costumers) CreateCostumer(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusOK)
 	utils.ToJSON(data.NewSuccessfulRequest(), rw)
 	c.l.Println("Successfully created costumer")
+	return
+}
+
+func (c *Costumers) SearchCostumer(rw http.ResponseWriter, r *http.Request) {
+	costumer := &data.Costumer{}
+	err := utils.ParseRequest(costumer, r.Body, rw)
+	if err != nil {
+		c.l.Println("Error parsing account", err)
+		return
+	}
+	costumers, err := c.CostumerDB.SearchCostumer(costumer)
+	if err != nil {
+		c.l.Println("Unable to search Costumer", err)
+		rw.WriteHeader(http.StatusInternalServerError)
+		utils.ToJSON(utils.GenericError{
+			Message: "Unable to search for costumer",
+		}, rw)
+		return
+	}
+	rw.WriteHeader(http.StatusOK)
+	utils.ToJSON(&costumers, rw)
+	c.l.Println("Successfully searched costumer")
 	return
 }
