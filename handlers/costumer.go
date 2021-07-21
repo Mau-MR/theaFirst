@@ -35,6 +35,7 @@ func (c *Costumers) CreateCostumer(rw http.ResponseWriter, r *http.Request) {
 		c.l.Println("Missing fields or validation error for costumer", costumer)
 		return
 	}
+	costumer.Standardize()
 	err = c.CostumerDB.CreateCostumer(costumer)
 	if err != nil {
 		c.l.Println("Unable to insert on dbs: ", err)

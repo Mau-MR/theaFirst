@@ -3,6 +3,7 @@ package data
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"strings"
 )
 
 //Costumer The costumer struct has the general aspects of a client
@@ -25,4 +26,10 @@ func (c *Costumer) ConvertToJSON(jsonString []byte) (interface{}, error) {
 	costumer := &Costumer{}
 	err := json.Unmarshal(jsonString, costumer)
 	return costumer, err
+}
+
+//Standardize converts all fields of the struct to lowercase
+func (c *Costumer) Standardize() {
+	c.Name = strings.ToLower(c.Name)
+	c.Organization = strings.ToLower(c.Organization)
 }
