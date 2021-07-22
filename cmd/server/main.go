@@ -33,7 +33,6 @@ func main() {
 	if err != nil {
 		l.Fatal("Unable to connect to MongoDB")
 	}
-	mongoWrapper := DB.NewMongoWrapper("Thea", mongoClient)
 	elasticSearchWrapper, err := DB.NewElasticWrapper(address, username, password, l)
 	if err != nil {
 		l.Fatal("Unable to connect to ElasticSearch: ", err)
@@ -43,7 +42,7 @@ func main() {
 	validation := utils.NewValidation()
 
 	//handlers
-	costumers := handlers.NewCostumers(l, mongoWrapper, elasticSearchWrapper, validation)
+	costumers := handlers.NewCostumers(l, mongoClient, elasticSearchWrapper, validation)
 
 	//Routes configuration
 	mux := mux.NewRouter()

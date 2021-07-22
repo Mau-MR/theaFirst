@@ -4,6 +4,7 @@ import (
 	"github.com/Mau-MR/theaFirst/DB"
 	"github.com/Mau-MR/theaFirst/data"
 	"github.com/Mau-MR/theaFirst/utils"
+	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"net/http"
 )
@@ -14,11 +15,11 @@ type Costumers struct {
 	validation *utils.Validation
 }
 
-func NewCostumers(logger *log.Logger, mongoWrapper *DB.MongoWrapper, elasticSearchWrapper *DB.ElasticWrapper, validation *utils.Validation) *Costumers {
+func NewCostumers(logger *log.Logger, mongoClient *mongo.Client, elasticSearchWrapper *DB.ElasticWrapper, validation *utils.Validation) *Costumers {
 	//NOTE: FOR THIS TIME THIS IS GOING TO BE HARD CODED BUT IT CAN BE DYNAMICALLY PROVISIONED
 	return &Costumers{
 		l:          logger,
-		CostumerDB: data.NewCostumerDB(mongoWrapper, elasticSearchWrapper),
+		CostumerDB: data.NewCostumerDB(mongoClient, elasticSearchWrapper),
 		validation: validation,
 	}
 }

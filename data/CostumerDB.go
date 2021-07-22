@@ -13,9 +13,9 @@ type CostumerDB struct {
 	collection    string
 }
 
-func NewCostumerDB(mongoWrapper *DB.MongoWrapper, elasticsearchClient *DB.ElasticWrapper) *CostumerDB {
+func NewCostumerDB(mongoClient *mongo.Client, elasticsearchClient *DB.ElasticWrapper) *CostumerDB {
 	return &CostumerDB{
-		mongoDB:       mongoWrapper,
+		mongoDB:       DB.NewMongoWrapper("Thea", mongoClient),
 		elasticSearch: elasticsearchClient,
 		collection:    "costumers",
 	}
