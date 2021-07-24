@@ -43,20 +43,22 @@ func main() {
 
 	//handlers
 	costumers := handlers.NewCostumers(l, mongoClient, elasticSearchWrapper, validation)
+	binnacles := handlers.NewBinnacles(l, mongoClient, elasticSearchWrapper, validation)
 
 	//Routes configuration
 	mux := mux.NewRouter()
 	//Post router
 	postRouter := mux.Methods(http.MethodPost).Subrouter()
 	postRouter.HandleFunc("/costumers", costumers.CreateCostumer)
+	postRouter.HandleFunc("binnacles/cell", binnacles.CreateCell)
 	//Get router
 	getRouter := mux.Methods(http.MethodGet).Subrouter()
 	getRouter.HandleFunc("/costumers", costumers.SearchCostumer)
-	//Update router
+	getRouter.HandleFunc("/binnacles", binnacles.SearchBinnacle)
+	//Update router TODO: CREATE THE RELATED METHODS
 
 	//server related configuration
 	server := http.Server{
-		//TODO: GET THE PORT FROM ENVIRONMENT
 		Addr:         fmt.Sprintf("localhost:%d", *port),
 		Handler:      mux,
 		ErrorLog:     l,

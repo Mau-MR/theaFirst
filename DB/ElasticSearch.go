@@ -62,7 +62,7 @@ func (e *ElasticWrapper) InsertStructTo(index, id string, Type interface{}) (*es
 		return e.client.Index(index, esutil.NewJSONReader(&Type))
 	}
 	return e.client.Index(
-		index, esutil.NewJSONReader(Type),
+		index, esutil.NewJSONReader(&Type),
 		e.client.Index.WithDocumentID(id),
 	)
 }

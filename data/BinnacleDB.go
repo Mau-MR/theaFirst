@@ -21,17 +21,35 @@ func NewBinnacleDB(mongoClient *mongo.Client, elasticWrapper *DB.ElasticWrapper)
 	}
 }
 
-//CreateBinnacle creates a new binnacle related with some costumer
-func (bnc *BinnacleDB) CreateBinnacle(costumerID string) error {
-	return nil
+//CreateBinnacle insert a new binnacle on the db
+func (bdb *BinnacleDB) CreateBinnacle(binnacle *Binnacle) error {
+	callback := func(ctx mongo.SessionContext) (interface{}, error) {
+		res, err := bdb.mongo.InsertStructTo(bdb.collection, &ctx, binnacle)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
+	}
+	_, err := bdb.mongo.Transaction(callback)
+	return err
+}
+
+//SearchBinnacle returns the binnacle that match a userID
+func (bdb *BinnacleDB) SearchBinnacle(costumerID string) (*Binnacle, error) {
+	id, err := primitive.ObjectIDFromHex(costumerID)
+	if err != nil {
+		return nil, err
+	}
+	bdb.mongo.SearchByFieldOn(bdb.collection, "costumerID", id)
+	return nil, nil
 }
 
 //CreateCell inserts a cell to the specified binnacle
-func (bnc *BinnacleDB) CreateCell(binnacleID primitive.ObjectID, cell *BinnacleCell) error {
+func (bdb *BinnacleDB) CreateCell(binnacleID primitive.ObjectID, cell *BinnacleCell) error {
 	return nil
 }
 
 //UpdateCell updates the specified cell of a binnacle
-func (bnc *BinnacleDB) UpdateCell(cell *BinnacleCell) error {
+func (bdb *BinnacleDB) UpdateCell(cell *BinnacleCell) error {
 	return nil
 }

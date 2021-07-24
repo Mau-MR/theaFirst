@@ -5,9 +5,9 @@ import (
 )
 
 type Binnacle struct {
-	ClientID   string         `json:"clientID" bson:"clientID"`
-	Records    []BinnacleCell `json:"records" bson:"records"`
-	BinnacleID string         `json:"binnacleID" bson:"binnacleID"`
+	CostumerID primitive.ObjectID `json:"costumerID,omitempty" bson:"costumerID,omitempty" validate:"required"`
+	Records    []BinnacleCell     `json:"records" bson:"records"`
+	BinnacleID primitive.ObjectID `json:"binnacleID,omitempty" bson:"binnacleID,omitempty"  validate:"required"`
 }
 
 type BinnacleCell struct {

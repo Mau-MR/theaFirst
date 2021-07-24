@@ -76,11 +76,8 @@ func (mw *MongoWrapper) InsertStructTo(collection string, ctx *mongo.SessionCont
 //TODO: CHECK A WAY TO OPTIMIZE with pointers
 
 // SearchByFieldOn gets the collection key and value that is going to search an return the document in case of existence
-func (mw *MongoWrapper) SearchByFieldOn(collection, key, value string, i interface{}) (interface{}, error) {
-	if err := mw.db.Collection(collection).FindOne(context.Background(), bson.D{{Key: key, Value: value}}).Decode(&i); err != nil {
-		return nil, err //means it could not be found
-	}
-	return i, nil
+func (mw *MongoWrapper) SearchByFieldOn(collection, key string, value interface{}) *mongo.SingleResult {
+	return mw.db.Collection(collection).FindOne(context.Background(), bson.D{{Key: key, Value: value}})
 }
 func (mw *MongoWrapper) SearchByID(collection string, ID primitive.ObjectID) *mongo.SingleResult {
 	return mw.db.Collection(collection).FindOne(context.Background(), bson.D{{Key: "_id", Value: ID}})
