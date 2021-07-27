@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/Mau-MR/theaFirst/DB"
+	"github.com/Mau-MR/theaFirst/connection"
 	"github.com/Mau-MR/theaFirst/handlers"
 	"github.com/Mau-MR/theaFirst/utils"
 	"github.com/gorilla/mux"
@@ -16,27 +17,11 @@ import (
 )
 
 func main() {
-	//Env variables
-	mongoURI := os.Getenv("MONGOURI")
-	address := os.Getenv("ELASTICURI")
-	username := os.Getenv("EUSER")
-	password := os.Getenv("EPASSWORD")
-
 	port := flag.Int("port", 0, "The server port")
 	flag.Parse()
 
 	//The logger creation
 	l := log.New(os.Stdout, "[Keybons-System] ", log.LstdFlags)
-	//DB Connections
-	mongoClient, err := DB.NewMongoClient(mongoURI)
-	defer mongoClient.Disconnect(context.TODO()) //TODO: handle err
-	if err != nil {
-		l.Fatal("Unable to connect to MongoDB")
-	}
-	elasticSearchWrapper, err := DB.NewElasticWrapper(address, username, password, l)
-	if err != nil {
-		l.Fatal("Unable to connect to ElasticSearch: ", err)
-	}
 
 	//validator for every request
 	validation := utils.NewValidation()
@@ -85,4 +70,17 @@ func main() {
 	if err := server.Shutdown(ctx); err != nil {
 		l.Fatal("Error shutting down the server", err)
 	}
+}
+func CreateModifiers(l log.Logger) (*DB.MongoModifier, *DB.ElasticModifier) {
+	//DB Connections
+	mongoClient, err := connection.New("mongo")
+	if err != nil {
+		l.Fatal("Unable to connect to MongoDB")
+	}
+	defer mongoClient.Close() //TODO: handle err
+	elasticClient, err := connection.New("elasticsearch")
+	if err != nil {
+		l.Fatal("Unable to connect to ElasticSearch: ", err)
+	}
+
 }

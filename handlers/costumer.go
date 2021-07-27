@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/Mau-MR/theaFirst/DB"
 	"github.com/Mau-MR/theaFirst/data"
+	"github.com/Mau-MR/theaFirst/data/handlers"
 	"github.com/Mau-MR/theaFirst/utils"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
@@ -11,15 +12,15 @@ import (
 
 type Costumers struct {
 	l          *log.Logger
-	CostumerDB *data.CostumerDB
+	CostumerDB *handlers.CostumerDB
 	validation *utils.Validation
 }
 
-func NewCostumers(logger *log.Logger, mongoClient *mongo.Client, elasticSearchWrapper *DB.ElasticWrapper, validation *utils.Validation) *Costumers {
+func NewCostumers(logger *log.Logger, mongoClient *mongo.Client, elasticSearchWrapper *DB.ElasticModifier, validation *utils.Validation) *Costumers {
 	//NOTE: FOR THIS TIME THIS IS GOING TO BE HARD CODED BUT IT CAN BE DYNAMICALLY PROVISIONED
 	return &Costumers{
 		l:          logger,
-		CostumerDB: data.NewCostumerDB(mongoClient, elasticSearchWrapper),
+		CostumerDB: handlers.NewCostumerDB(mongoClient, elasticSearchWrapper),
 		validation: validation,
 	}
 }
