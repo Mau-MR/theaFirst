@@ -23,7 +23,11 @@ func NewCostumerDB(mongoConnection connection.Connection, elasticConnection conn
 
 //CreateCostumer receives a costumer type, creates a mongo transaction and inserts the same costumer into the elasticsearch cluster, if and err  occurs it is returned and the transaction ends
 func (c *CostumerDB) CreateCostumer(costumer types.Type) error {
-	err := c.mongoDB.Insert(costumer)
+	_, err := c.mongoDB.SearchFields(costumer)
+	if err == nil { //If err is nil means that costumer was found
+		return fmt.Errorf("Costumer already exists")
+	}
+	err = c.mongoDB.Insert(costumer)
 	if err != nil {
 		return fmt.Errorf("Unable to insert to primary db: %v", err)
 	}

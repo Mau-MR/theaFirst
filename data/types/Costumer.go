@@ -32,9 +32,10 @@ func (c *Costumer) SearchTerm() string {
 }
 
 func (c *Costumer) SearchFields() *map[string]string {
-	//TODO
-	m := make(map[string]string)
-	return &m
+	m := &map[string]string{
+		"phone": c.Phone,
+	}
+	return m
 }
 
 func (c *Costumer) Clone() Type {

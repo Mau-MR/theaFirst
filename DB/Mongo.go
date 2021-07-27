@@ -62,8 +62,10 @@ func (mw *MongoModifier) SearchFields(data types.Type) (types.Type, error) {
 	}
 	newType := data.EmptyClone()
 	err := mw.client.Client.Database(mw.db).Collection(mw.collection).FindOne(context.Background(), doc).Decode(newType)
+	if err != nil {
+		return nil, err
+	}
 	return newType, err
-
 }
 func (mw *MongoModifier) SearchID(data types.Type) (types.Type, error) {
 	newType := data.EmptyClone()
