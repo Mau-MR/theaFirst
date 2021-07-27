@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"github.com/Mau-MR/theaFirst/DB"
+	"github.com/Mau-MR/theaFirst/connection"
 	"github.com/Mau-MR/theaFirst/data"
 	"github.com/Mau-MR/theaFirst/data/handlers"
+	"github.com/Mau-MR/theaFirst/data/types"
 	"github.com/Mau-MR/theaFirst/utils"
-	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"net/http"
 )
@@ -16,7 +16,7 @@ type Costumers struct {
 	validation *utils.Validation
 }
 
-func NewCostumers(logger *log.Logger, mongoClient *mongo.Client, elasticSearchWrapper *DB.ElasticModifier, validation *utils.Validation) *Costumers {
+func NewCostumers(logger *log.Logger, mongoClient connection.Connection, elasticSearchWrapper connection.Connection, validation *utils.Validation) *Costumers {
 	//NOTE: FOR THIS TIME THIS IS GOING TO BE HARD CODED BUT IT CAN BE DYNAMICALLY PROVISIONED
 	return &Costumers{
 		l:          logger,
@@ -26,7 +26,7 @@ func NewCostumers(logger *log.Logger, mongoClient *mongo.Client, elasticSearchWr
 }
 
 func (c *Costumers) CreateCostumer(rw http.ResponseWriter, r *http.Request) {
-	costumer := &data.Costumer{}
+	costumer := &types.Costumer{}
 	err := utils.ParseRequest(costumer, r.Body, rw)
 	if err != nil {
 		c.l.Println("Error parsing account", err)
@@ -54,7 +54,7 @@ func (c *Costumers) CreateCostumer(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Costumers) SearchCostumer(rw http.ResponseWriter, r *http.Request) {
-	costumer := &data.Costumer{}
+	costumer := &types.Costumer{}
 	err := utils.ParseRequest(costumer, r.Body, rw)
 	if err != nil {
 		c.l.Println("Error parsing account", err)

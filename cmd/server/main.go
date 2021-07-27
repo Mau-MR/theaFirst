@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/Mau-MR/theaFirst/DB"
 	"github.com/Mau-MR/theaFirst/connection"
 	"github.com/Mau-MR/theaFirst/handlers"
 	"github.com/Mau-MR/theaFirst/utils"
@@ -19,17 +18,14 @@ import (
 func main() {
 	port := flag.Int("port", 0, "The server port")
 	flag.Parse()
-
 	//The logger creation
 	l := log.New(os.Stdout, "[Keybons-System] ", log.LstdFlags)
-
 	//validator for every request
 	validation := utils.NewValidation()
-
+	mongoClient, elasticClient := CreateConnections(l)
 	//handlers
-	costumers := handlers.NewCostumers(l, mongoClient, elasticSearchWrapper, validation)
-	binnacles := handlers.NewBinnacles(l, mongoClient, elasticSearchWrapper, validation)
-
+	costumers := handlers.NewCostumers(l, mongoClient, elasticClient, validation)
+	binnacles := handlers.NewBinnacles(l, mongoClient, elasticClient, validation)
 	//Routes configuration
 	mux := mux.NewRouter()
 	//Post router
@@ -41,7 +37,6 @@ func main() {
 	getRouter.HandleFunc("/costumers", costumers.SearchCostumer)
 	getRouter.HandleFunc("/binnacles", binnacles.SearchBinnacle)
 	//Update router TODO: CREATE THE RELATED METHODS
-
 	//server related configuration
 	server := http.Server{
 		Addr:         fmt.Sprintf("localhost:%d", *port),
@@ -71,7 +66,8 @@ func main() {
 		l.Fatal("Error shutting down the server", err)
 	}
 }
-func CreateModifiers(l log.Logger) (*DB.MongoModifier, *DB.ElasticModifier) {
+
+func CreateConnections(l *log.Logger) (connection.Connection, connection.Connection) {
 	//DB Connections
 	mongoClient, err := connection.New("mongo")
 	if err != nil {
@@ -82,5 +78,5 @@ func CreateModifiers(l log.Logger) (*DB.MongoModifier, *DB.ElasticModifier) {
 	if err != nil {
 		l.Fatal("Unable to connect to ElasticSearch: ", err)
 	}
-
+	return mongoClient, elasticClient
 }
