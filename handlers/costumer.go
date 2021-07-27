@@ -60,7 +60,7 @@ func (c *Costumers) SearchCostumer(rw http.ResponseWriter, r *http.Request) {
 		c.l.Println("Error parsing account", err)
 		return
 	}
-	costumers, err := c.CostumerDB.SearchCostumer(costumer)
+	costumers, err := c.CostumerDB.SearchCostumer(*costumer)
 	if err != nil {
 		c.l.Println("Unable to search Costumer", err)
 		rw.WriteHeader(http.StatusInternalServerError)

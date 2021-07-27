@@ -23,6 +23,7 @@ func main() {
 	//validator for every request
 	validation := utils.NewValidation()
 	mongoClient, elasticClient := CreateConnections(l)
+	defer mongoClient.Close() //TODO: handle err
 	//handlers
 	costumers := handlers.NewCostumers(l, mongoClient, elasticClient, validation)
 	binnacles := handlers.NewBinnacles(l, mongoClient, elasticClient, validation)
@@ -73,7 +74,6 @@ func CreateConnections(l *log.Logger) (connection.Connection, connection.Connect
 	if err != nil {
 		l.Fatal("Unable to connect to MongoDB")
 	}
-	defer mongoClient.Close() //TODO: handle err
 	elasticClient, err := connection.New("elasticsearch")
 	if err != nil {
 		l.Fatal("Unable to connect to ElasticSearch: ", err)

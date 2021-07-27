@@ -40,7 +40,7 @@ func (em *ElasticModifier) Insert(data types.Type) error {
 	return err
 }
 
-//Delete  receives the index and the ID of the document and deletes it, returns error in case of failure
+//Delete  receives the index and the PrimitiveID of the document and deletes it, returns error in case of failure
 func (em *ElasticModifier) Delete(data types.Type) error {
 	res, err := em.client.Client.Delete(
 		em.index, data.StringID(),
@@ -81,12 +81,12 @@ func (em *ElasticModifier) BuildSearchQueryByFields(termAndFields *map[string]st
 	return fmt.Sprintf(query, searchTerm, fields)
 }
 
-func (em *ElasticModifier) SearchID(data types.Type) (*types.Type, error) {
+func (em *ElasticModifier) SearchID(data types.Type) (types.Type, error) {
 	return nil, nil
 }
 
 //SearchFields makes a default search with the specified query and index, returns the response as a esapi.Response, and and error if occurred
-func (em *ElasticModifier) SearchFields(data types.Type) (*types.Type, error) {
+func (em *ElasticModifier) SearchFields(data types.Type) (types.Type, error) {
 	query := em.BuildSearchQueryByFields(data.SearchFields())
 	res, err := em.client.Client.Search(
 		em.client.Client.Search.WithContext(context.Background()),

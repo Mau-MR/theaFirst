@@ -26,6 +26,9 @@ func (mc *MongoConnection) Connect() error {
 		return err
 	}
 	err = client.Ping(context.TODO(), nil)
+	if err != nil {
+		return err
+	}
 	mc.Client = client
 	return nil
 }

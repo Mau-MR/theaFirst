@@ -9,10 +9,8 @@ type Type interface {
 	SearchTerm() string
 	//SearchFields used for mongo searching by specific fields
 	SearchFields() *map[string]string
-	//SearchID
-	PrimitiveIDs() *map[string]primitive.ObjectID
-	Clone() *Type
-	EmptyClone() *Type
-	ID() primitive.ObjectID
+	Clone() Type
+	EmptyClone() Type
+	PrimitiveID() (primitive.ObjectID,error)
 	StringID() string
 }

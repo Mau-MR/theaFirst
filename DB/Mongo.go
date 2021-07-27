@@ -54,7 +54,7 @@ func (mw *MongoModifier) Insert(data types.Type) error {
 }
 
 // SearchFields gets the collection key and value that is going to search an return the document in case of existence
-func (mw *MongoModifier) SearchFields(data types.Type) (*types.Type, error) {
+func (mw *MongoModifier) SearchFields(data types.Type) (types.Type, error) {
 	fieldsValue := data.SearchFields()
 	var doc bson.D
 	for key, val := range *fieldsValue {
@@ -65,21 +65,25 @@ func (mw *MongoModifier) SearchFields(data types.Type) (*types.Type, error) {
 	return newType, err
 
 }
-func (mw *MongoModifier) SearchID(data types.Type) (*types.Type, error) {
-	fieldsObjectID := data.PrimitiveIDs()
-	var doc bson.D
-	for key, val := range *fieldsObjectID {
-		doc = append(doc, bson.E{Key: key, Value: val})
-	}
+func (mw *MongoModifier) SearchID(data types.Type) (types.Type, error) {
 	newType := data.EmptyClone()
-	err := mw.client.Client.Database(mw.db).Collection(mw.collection).FindOne(context.Background(), doc).Decode(newType)
+	id, err := data.PrimitiveID()
+	if err != nil {
+		return nil, err
+	}
+	doc := bson.D{{Key: "_id", Value: id}}
+	err = mw.client.Client.Database(mw.db).Collection(mw.collection).FindOne(context.Background(), doc).Decode(newType)
 	return newType, err
 }
 
 func (mw *MongoModifier) Update(data types.Type) error {
-	_, err := mw.client.Client.Database(mw.db).Collection(mw.collection).UpdateOne(
+	id, err := data.PrimitiveID()
+	if err != nil {
+		return err
+	}
+	_, err = mw.client.Client.Database(mw.db).Collection(mw.collection).UpdateOne(
 		context.Background(),
-		bson.M{"_id": data.ID()},
+		bson.M{"_id": id},
 		bson.D{{
 			Key:   "$set",
 			Value: data,
@@ -89,6 +93,10 @@ func (mw *MongoModifier) Update(data types.Type) error {
 }
 
 func (mw *MongoModifier) Delete(data types.Type) error {
-	_, err := mw.client.Client.Database(mw.db).Collection(mw.collection).DeleteOne(context.Background(), bson.M{"_id": data.ID()})
+	id, err := data.PrimitiveID()
+	if err != nil {
+		return err
+	}
+	_, err = mw.client.Client.Database(mw.db).Collection(mw.collection).DeleteOne(context.Background(), bson.M{"_id": id})
 	return err
 }
