@@ -3,7 +3,7 @@ package DB
 import (
 	"context"
 	"github.com/Mau-MR/theaFirst/connection"
-	"github.com/Mau-MR/theaFirst/data"
+	"github.com/Mau-MR/theaFirst/data/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -48,13 +48,13 @@ func (mw *MongoModifier) Transaction(callback callback) (interface{}, error) {
 */
 
 //Insert inserts and struct on the specified db and collection returns the response of the insertion and an error in case of failure
-func (mw *MongoModifier) Insert(data data.Type) error {
+func (mw *MongoModifier) Insert(data types.Type) error {
 	_, err := mw.client.Client.Database(mw.db).Collection(mw.collection).InsertOne(context.Background(), data)
 	return err
 }
 
 // SearchFields gets the collection key and value that is going to search an return the document in case of existence
-func (mw *MongoModifier) SearchFields(data data.Type) (*data.Type, error) {
+func (mw *MongoModifier) SearchFields(data types.Type) (*types.Type, error) {
 	fieldsValue := data.SearchFields()
 	var doc bson.D
 	for key, val := range *fieldsValue {
@@ -65,7 +65,7 @@ func (mw *MongoModifier) SearchFields(data data.Type) (*data.Type, error) {
 	return newType, err
 
 }
-func (mw *MongoModifier) SearchID(data data.Type) (*data.Type, error) {
+func (mw *MongoModifier) SearchID(data types.Type) (*types.Type, error) {
 	fieldsObjectID := data.PrimitiveIDs()
 	var doc bson.D
 	for key, val := range *fieldsObjectID {
@@ -76,7 +76,7 @@ func (mw *MongoModifier) SearchID(data data.Type) (*data.Type, error) {
 	return newType, err
 }
 
-func (mw *MongoModifier) Update(data data.Type) error {
+func (mw *MongoModifier) Update(data types.Type) error {
 	_, err := mw.client.Client.Database(mw.db).Collection(mw.collection).UpdateOne(
 		context.Background(),
 		bson.M{"_id": data.ID()},
@@ -88,7 +88,7 @@ func (mw *MongoModifier) Update(data data.Type) error {
 	return err
 }
 
-func (mw *MongoModifier) Delete(data data.Type) error {
+func (mw *MongoModifier) Delete(data types.Type) error {
 	_, err := mw.client.Client.Database(mw.db).Collection(mw.collection).DeleteOne(context.Background(), bson.M{"_id": data.ID()})
 	return err
 }

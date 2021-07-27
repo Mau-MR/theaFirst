@@ -1,18 +1,18 @@
 package DB
 
 import (
-	"github.com/Mau-MR/theaFirst/data"
+	"github.com/Mau-MR/theaFirst/data/types"
 )
 
 //Modifier is the type related to the modifications of the dbs
 type Modifier interface {
-	Insert(data data.Type) error
+	Insert(data types.Type) error
 	//Update updates a type based on their ID with the new struct data
-	Update(data data.Type) error
-	SearchFields(data data.Type) (*data.Type, error)
-	SearchID(data data.Type) (*data.Type, error)
+	Update(data types.Type) error
+	SearchFields(data types.Type) (*types.Type, error)
+	SearchID(data types.Type) (*types.Type, error)
 	//Delete deletes a document based on their ID
-	Delete(data data.Type) error
+	Delete(data types.Type) error
 
 	/**
 	TODO LATER
