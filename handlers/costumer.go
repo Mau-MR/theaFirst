@@ -4,6 +4,7 @@ import (
 	"github.com/Mau-MR/theaFirst/connection"
 	"github.com/Mau-MR/theaFirst/data"
 	"github.com/Mau-MR/theaFirst/data/handlers"
+	"github.com/Mau-MR/theaFirst/data/httpRequest"
 	"github.com/Mau-MR/theaFirst/data/types"
 	"github.com/Mau-MR/theaFirst/utils"
 	"log"
@@ -54,13 +55,13 @@ func (c *Costumers) CreateCostumer(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Costumers) SearchCostumer(rw http.ResponseWriter, r *http.Request) {
-	costumer := &types.Costumer{}
-	err := utils.ParseRequest(costumer, r.Body, rw)
+	sCostumer := &httpRequest.SearchCostumer{}
+	err := utils.ParseRequest(sCostumer, r.Body, rw)
 	if err != nil {
 		c.l.Println("Error parsing account", err)
 		return
 	}
-	costumers, err := c.CostumerDB.SearchCostumer(*costumer)
+	costumers, err := c.CostumerDB.SearchCostumer(sCostumer)
 	if err != nil {
 		c.l.Println("Unable to search Costumer", err)
 		rw.WriteHeader(http.StatusInternalServerError)

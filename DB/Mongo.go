@@ -54,7 +54,7 @@ func (mw *MongoModifier) Insert(data types.Type) error {
 }
 
 // SearchFields gets the collection key and value that is going to search an return the document in case of existence
-func (mw *MongoModifier) SearchFields(data types.Type) (types.Type, error) {
+func (mw *MongoModifier) SearchFields(data types.Type) ([]types.Type, error) {
 	fieldsValue := data.SearchFields()
 	var doc bson.D
 	for key, val := range *fieldsValue {
@@ -65,7 +65,7 @@ func (mw *MongoModifier) SearchFields(data types.Type) (types.Type, error) {
 	if err != nil {
 		return nil, err
 	}
-	return newType, err
+	return []types.Type{newType}, err
 }
 func (mw *MongoModifier) SearchID(data types.Type) (types.Type, error) {
 	newType := data.EmptyClone()

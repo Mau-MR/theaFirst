@@ -59,10 +59,10 @@ func (em *ElasticModifier) Update(data types.Type) error {
 }
 
 func (em *ElasticModifier) BuildSearchQueryByFields(termAndFields *map[string]string) string {
-	var searchTerm strings.Builder
+	searchTerm := "" // todo Change to a string.Builder implementation
 	var fields []string
 	for field, term := range *termAndFields {
-		searchTerm.WriteString(term + " ")
+		searchTerm += term
 		fields = append(fields, field)
 	}
 	query := `{
@@ -86,7 +86,7 @@ func (em *ElasticModifier) SearchID(data types.Type) (types.Type, error) {
 }
 
 //SearchFields makes a default search with the specified query and index, returns the response as a esapi.Response, and and error if occurred
-func (em *ElasticModifier) SearchFields(data types.Type) (types.Type, error) {
+func (em *ElasticModifier) SearchFields(data types.Type) ([]types.Type, error) {
 	query := em.BuildSearchQueryByFields(data.SearchFields())
 	res, err := em.client.Client.Search(
 		em.client.Client.Search.WithContext(context.Background()),
@@ -101,8 +101,23 @@ func (em *ElasticModifier) SearchFields(data types.Type) (types.Type, error) {
 	if res.IsError() {
 		return nil, fmt.Errorf("ElasticError: %s", res.Status())
 	}
-	return nil, nil
+	rw, err := em.GetResponseWrapper(res)
+	if err != nil {
+		return nil, err
+	}
+	var searchedTypes []types.Type
+	for _, hit := range rw.Hits.Hits {
+		tmpType := data.EmptyClone()
+		err := tmpType.FromJSON(hit.Source)
+		if err != nil {
+			return searchedTypes, err
+		}
+		tmpType.SetID(hit.ID)
+		searchedTypes = append(searchedTypes, tmpType)
+	}
+	return searchedTypes, nil
 }
+
 func (em *ElasticModifier) GetResponseWrapper(res *esapi.Response) (*ResponseWrapper, error) {
 	rw, err := NewResponseWrapper(res)
 	if err != nil {

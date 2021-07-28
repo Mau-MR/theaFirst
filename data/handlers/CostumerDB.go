@@ -38,6 +38,10 @@ func (c *CostumerDB) CreateCostumer(costumer types.Type) error {
 	return err
 }
 
-func (c *CostumerDB) SearchCostumer(costumer types.Costumer) ([]*types.Costumer, error) {
-	return nil, nil
+func (c *CostumerDB) SearchCostumer(csReq types.Type) ([]types.Type, error) {
+	fields, err := c.elasticSearch.SearchFields(csReq)
+	if err != nil {
+		return nil, err
+	}
+	return fields, nil
 }

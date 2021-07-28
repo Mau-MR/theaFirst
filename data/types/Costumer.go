@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"strings"
 )
@@ -17,6 +18,9 @@ type Costumer struct {
 func (c *Costumer) Standardize() {
 	c.Name = strings.ToLower(c.Name)
 	c.Organization = strings.ToLower(c.Organization)
+}
+func (c *Costumer) SetID(newID string) {
+	c.ID = newID
 }
 
 //String formats the type for being printed with fmt
@@ -47,12 +51,13 @@ func (c *Costumer) EmptyClone() Type {
 	return &Costumer{}
 }
 
+func (c *Costumer) FromJSON(m json.RawMessage) error {
+	err := json.Unmarshal(m, c)
+	return err
+}
 func (c *Costumer) PrimitiveID() (primitive.ObjectID, error) {
 	id, err := primitive.ObjectIDFromHex(c.ID)
-	if err != nil {
-		return id, err
-	}
-	return id, nil
+	return id, err
 }
 
 func (c *Costumer) StringID() string {
