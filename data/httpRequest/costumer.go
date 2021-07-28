@@ -29,6 +29,9 @@ func (sc *SearchCostumer) SearchTerm() string {
 	return ""
 }
 
+func (sc *SearchCostumer) SearchIDS() (*map[string]primitive.ObjectID,error) {
+	return nil,nil
+}
 func (sc *SearchCostumer) SearchFields() *map[string]string {
 	m := &map[string]string{
 		"name": sc.Name,

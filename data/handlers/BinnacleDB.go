@@ -1,31 +1,41 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/Mau-MR/theaFirst/DB"
 	"github.com/Mau-MR/theaFirst/connection"
 	"github.com/Mau-MR/theaFirst/data/types"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"log"
 )
 
 type BinnacleDB struct {
-	mongo         DB.Modifier
-	elasticSearch DB.Modifier
-	collection    string
+	mongoBinnacles DB.Modifier
+	mongoCostumers DB.Modifier
 }
 
 //NewBinnacleDB returns a BinnacleDB for usage of the handler
 func NewBinnacleDB(mongoConnection connection.Connection, elasticConnection connection.Connection) *BinnacleDB {
-	mongoModifier := DB.New(mongoConnection, "Thea", "costumers")
-	elasticModifier := DB.New(elasticConnection, "Thea", "costumers")
+	binnacles := DB.New(mongoConnection, "Thea", "binnacles")
+	costumers := DB.New(mongoConnection, "Thea", "costumers")
+
 	return &BinnacleDB{
-		mongo:         mongoModifier,
-		elasticSearch: elasticModifier,
-		collection:    "binnacles",
+		mongoBinnacles: binnacles,
+		mongoCostumers: costumers,
 	}
 }
 
 //CreateBinnacle insert a new binnacle on the db
 func (bdb *BinnacleDB) CreateBinnacle(binnacle *types.Binnacle) error {
+	_, err := bdb.mongoCostumers.SearchID(binnacle)
+	if err != nil {
+		log.Println(err)
+		return fmt.Errorf("Costumer related to this binnacle doesnt exist")
+	}
+	err = bdb.mongoBinnacles.Insert(binnacle)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

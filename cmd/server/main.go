@@ -31,12 +31,13 @@ func main() {
 	mux := mux.NewRouter()
 	//Post router
 	postRouter := mux.Methods(http.MethodPost).Subrouter()
-	postRouter.HandleFunc("/costumers", costumers.CreateCostumer)
-	postRouter.HandleFunc("binnacles/cell", binnacles.CreateCell)
+	postRouter.HandleFunc("/costumer", costumers.CreateCostumer)
+	postRouter.HandleFunc("/binnacle/cell", binnacles.CreateCell)
+	postRouter.HandleFunc("/binnacle", binnacles.CreateBinnacle)
 	//Get router
 	getRouter := mux.Methods(http.MethodGet).Subrouter()
-	getRouter.HandleFunc("/costumers", costumers.SearchCostumer)
-	getRouter.HandleFunc("/binnacles", binnacles.SearchBinnacle)
+	getRouter.HandleFunc("/costumer", costumers.SearchCostumer)
+	getRouter.HandleFunc("/binnacle", binnacles.SearchBinnacle)
 	//Update router TODO: CREATE THE RELATED METHODS
 	//server related configuration
 	server := http.Server{

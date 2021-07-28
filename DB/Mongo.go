@@ -74,11 +74,15 @@ func (mw *MongoModifier) SearchFields(data types.Type) ([]types.Type, error) {
 }
 func (mw *MongoModifier) SearchID(data types.Type) (types.Type, error) {
 	newType := data.EmptyClone()
-	id, err := data.PrimitiveID()
+	fieldsID, err := data.SearchIDS()
 	if err != nil {
 		return nil, err
 	}
-	doc := bson.D{{Key: "_id", Value: id}}
+	var doc bson.D
+	for field, id := range *fieldsID {
+		log.Println(id)
+		doc = append(doc, bson.E{Key: field, Value: id})
+	}
 	err = mw.client.Client.Database(mw.db).Collection(mw.collection).FindOne(context.Background(), doc).Decode(newType)
 	return newType, err
 }

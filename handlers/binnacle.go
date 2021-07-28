@@ -6,7 +6,6 @@ import (
 	"github.com/Mau-MR/theaFirst/data/handlers"
 	"github.com/Mau-MR/theaFirst/data/types"
 	"github.com/Mau-MR/theaFirst/utils"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"net/http"
 )
@@ -25,28 +24,16 @@ func NewBinnacles(logger *log.Logger, mongoClient connection.Connection, elastic
 	}
 }
 func (bs *Binnacles) CreateBinnacle(rw http.ResponseWriter, r *http.Request) {
-	pBinnacleReq := &data.PostBinnacleReq{}
-	err := utils.ParseRequest(pBinnacleReq, r.Body, rw)
+	binnacle := &types.Binnacle{}
+	err := utils.ParseRequest(binnacle, r.Body, rw)
 	if err != nil {
 		bs.l.Println("Error parsing account", err)
 		return
 	}
-	err = bs.validation.ValidateRequest(pBinnacleReq, rw)
+	err = bs.validation.ValidateRequest(binnacle, rw)
 	if err != nil {
-		bs.l.Println("Missing fields or validation error for costumer", pBinnacleReq)
+		bs.l.Println("Missing fields or validation error for costumer", binnacle)
 		return
-	}
-	costumerID, err := primitive.ObjectIDFromHex(pBinnacleReq.CostumerID)
-	if err != nil {
-		bs.l.Println("Unable to convert the id", err)
-		rw.WriteHeader(http.StatusInternalServerError)
-		utils.ToJSON(utils.GenericError{
-			Message: "Unable to parse the id",
-		}, rw)
-		return
-	}
-	binnacle := &types.Binnacle{
-		CostumerID: costumerID,
 	}
 	err = bs.BinnacleDB.CreateBinnacle(binnacle)
 	if err != nil {
@@ -55,11 +42,11 @@ func (bs *Binnacles) CreateBinnacle(rw http.ResponseWriter, r *http.Request) {
 		utils.ToJSON(utils.GenericError{
 			Message: "Unable to create the binnacle",
 		}, rw)
-		rw.WriteHeader(http.StatusOK)
-		utils.ToJSON(data.NewSuccessfulRequest(), rw)
-		bs.l.Println("Successfully created Binnacle")
 		return
 	}
+	rw.WriteHeader(http.StatusOK)
+	utils.ToJSON(data.NewSuccessfulRequest(), rw)
+	bs.l.Println("Successfully created Binnacle")
 }
 
 //SearchBinnacle receives the data.GetBinnacleReq
