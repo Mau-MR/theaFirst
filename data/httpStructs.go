@@ -1,5 +1,7 @@
 package data
 
+import "github.com/Mau-MR/theaFirst/data/types"
+
 //Costumers
 
 //Binnacles
@@ -11,13 +13,13 @@ type GetBinnacleReq struct {
 
 //GetBinnacleRes returns the specified binnacle
 type GetBinnacleRes struct {
-	Binnacle Binnacle `json:"binnacle"`
+	Binnacle types.Binnacle `json:"binnacle"`
 }
 
 type PostBinnacleReq struct {
 	CostumerID string `json:"binnacle"`
 }
 type PostBinnacleCellReq struct {
-	BinnacleID string       `json:"binnacleID"`
-	Cell       BinnacleCell `json:"cell"`
+	BinnacleID string             `json:"binnacleID"`
+	Cell       types.BinnacleCell `json:"cell"`
 }

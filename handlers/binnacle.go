@@ -1,25 +1,26 @@
 package handlers
 
 import (
-	"github.com/Mau-MR/theaFirst/DB"
+	"github.com/Mau-MR/theaFirst/connection"
 	"github.com/Mau-MR/theaFirst/data"
+	"github.com/Mau-MR/theaFirst/data/handlers"
+	"github.com/Mau-MR/theaFirst/data/types"
 	"github.com/Mau-MR/theaFirst/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"net/http"
 )
 
 type Binnacles struct {
 	l          *log.Logger
-	BinnacleDB *data.BinnacleDB
+	BinnacleDB *handlers.BinnacleDB
 	validation *utils.Validation
 }
 
-func NewBinnacles(logger *log.Logger, mongoClient *mongo.Client, elasticWrapper *DB.ElasticWrapper, validation *utils.Validation) *Binnacles {
+func NewBinnacles(logger *log.Logger, mongoClient connection.Connection, elasticWrapper connection.Connection, validation *utils.Validation) *Binnacles {
 	return &Binnacles{
 		l:          logger,
-		BinnacleDB: data.NewBinnacleDB(mongoClient, elasticWrapper),
+		BinnacleDB: handlers.NewBinnacleDB(mongoClient, elasticWrapper),
 		validation: validation,
 	}
 }
@@ -44,7 +45,7 @@ func (bs *Binnacles) CreateBinnacle(rw http.ResponseWriter, r *http.Request) {
 		}, rw)
 		return
 	}
-	binnacle := &data.Binnacle{
+	binnacle := &types.Binnacle{
 		CostumerID: costumerID,
 	}
 	err = bs.BinnacleDB.CreateBinnacle(binnacle)

@@ -2,51 +2,31 @@ package DB
 
 import (
 	"context"
-	"fmt"
+	"github.com/Mau-MR/theaFirst/connection"
+	"github.com/Mau-MR/theaFirst/data/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readconcern"
-	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"log"
-	"os"
-	"time"
 )
 
-type MongoWrapper struct {
-	client *mongo.Client
-	l      *log.Logger
-	db     *mongo.Database
+type MongoModifier struct {
+	client     *connection.MongoConnection
+	db         string
+	collection string
 }
 type callback func(mongo.SessionContext) (interface{}, error)
 
-//NewMongoWrapper gets the mongo URI for a db and returns a MongoWrapper with a client inside and a error in case of the failure of the connection
-func NewMongoWrapper(db string, mongoClient *mongo.Client) *MongoWrapper {
-	return &MongoWrapper{
-		client: mongoClient,
-		l:      log.New(os.Stdout, fmt.Sprintf("[%s-DB] ", db), log.LstdFlags),
-		db:     mongoClient.Database(db),
-	}
+//New gets the mongo URI for a db and returns a MongoModifier with a client inside and a error in case of the failure of the connection
+func (mw *MongoModifier) New(connection *connection.MongoConnection, db, collection string) {
+	mw.client = connection
+	mw.db = db
+	mw.collection = collection
 }
 
-//NewMongoClient creates a client based on the URI that is passed and returns the client or a error in case of failure
-func NewMongoClient(mongoURI string) (*mongo.Client, error) {
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
-	if err != nil {
-		return nil, err
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	err = client.Connect(ctx)
-	if err != nil {
-		return nil, err
-	}
-	err = client.Ping(context.TODO(), nil)
-	return client, err
-}
-
+/*
 //Transaction makes an ACID transaction for MongoDB
-func (mw *MongoWrapper) Transaction(callback callback) (interface{}, error) {
+func (mw *MongoModifier) Transaction(callback callback) (interface{}, error) {
 	wc := writeconcern.New(writeconcern.WMajority())
 	rc := readconcern.Snapshot()
 	txnOpts := options.Transaction().SetWriteConcern(wc).SetReadConcern(rc)
@@ -67,56 +47,63 @@ func (mw *MongoWrapper) Transaction(callback callback) (interface{}, error) {
 	mw.l.Println("Successful transaction!")
 	return res, nil
 }
+*/
 
-//InsertStructTo inserts and struct on the specified db and collection returns the response of the insertion and an error in case of failure
-func (mw *MongoWrapper) InsertStructTo(collection string, ctx *mongo.SessionContext, i interface{}) (*mongo.InsertOneResult, error) {
-	return mw.db.Collection(collection).InsertOne(*ctx, i)
+//Insert inserts and struct on the specified db and collection returns the response of the insertion and an error in case of failure
+func (mw *MongoModifier) Insert(data types.Type) error {
+	res, err := mw.client.Client.Database(mw.db).Collection(mw.collection).InsertOne(context.Background(), data)
+	id := res.InsertedID.(primitive.ObjectID).Hex()
+	data.SetID(id)
+	log.Println(data.StringID())
+	return err
 }
 
-//TODO: CHECK A WAY TO OPTIMIZE with pointers
-
-// SearchByFieldOn gets the collection key and value that is going to search an return the document in case of existence
-func (mw *MongoWrapper) SearchByFieldOn(collection, key string, value interface{}) *mongo.SingleResult {
-	return mw.db.Collection(collection).FindOne(context.Background(), bson.D{{Key: key, Value: value}})
+// SearchFields gets the collection key and value that is going to search an return the document in case of existence
+func (mw *MongoModifier) SearchFields(data types.Type) ([]types.Type, error) {
+	fieldsValue := data.SearchFields()
+	var doc bson.D
+	for key, val := range *fieldsValue {
+		doc = append(doc, bson.E{Key: key, Value: val})
+	}
+	newType := data.EmptyClone()
+	err := mw.client.Client.Database(mw.db).Collection(mw.collection).FindOne(context.Background(), doc).Decode(newType)
+	if err != nil {
+		return nil, err
+	}
+	return []types.Type{newType}, err
 }
-func (mw *MongoWrapper) SearchByID(collection string, ID primitive.ObjectID) *mongo.SingleResult {
-	return mw.db.Collection(collection).FindOne(context.Background(), bson.D{{Key: "_id", Value: ID}})
+func (mw *MongoModifier) SearchID(data types.Type) (types.Type, error) {
+	newType := data.EmptyClone()
+	id, err := data.PrimitiveID()
+	if err != nil {
+		return nil, err
+	}
+	doc := bson.D{{Key: "_id", Value: id}}
+	err = mw.client.Client.Database(mw.db).Collection(mw.collection).FindOne(context.Background(), doc).Decode(newType)
+	return newType, err
 }
 
-//UpdateDocumentOn receives the search criteria with searchField and searchFieldValue and updates the document with the given newFieldsAndValues of type map[field]value
-//NOTE: UpdateDocumentOn doesnt work with _id field, since we create another method UpdateDocumentByID to do this and handler better the type primitive.ObjectID
-func (mw *MongoWrapper) UpdateDocumentOn(collection, searchField, searchFieldValue string, ctx *mongo.SessionContext, newFieldsAndValues *map[string]string) (interface{}, error) {
-	changes := mw.convertMapToBsonD(newFieldsAndValues)
-	mw.l.Println("Document changes: ", changes)
-	return mw.db.Collection(collection).UpdateOne(
-		*ctx,
-		bson.M{searchField: searchFieldValue},
-		bson.D{{
-			"$set",
-			&changes,
-		}},
-	)
-}
-func (mw *MongoWrapper) UpdateDocumentByID(collection string, id primitive.ObjectID, ctx *mongo.SessionContext, newFieldsAndValues *map[string]string) (interface{}, error) {
-	changes := mw.convertMapToBsonD(newFieldsAndValues)
-
-	return mw.db.Collection(collection).UpdateOne(
-		*ctx,
+func (mw *MongoModifier) Update(data types.Type) error {
+	id, err := data.PrimitiveID()
+	if err != nil {
+		return err
+	}
+	_, err = mw.client.Client.Database(mw.db).Collection(mw.collection).UpdateOne(
+		context.Background(),
 		bson.M{"_id": id},
 		bson.D{{
-			"$set",
-			&changes,
+			Key:   "$set",
+			Value: data,
 		}},
 	)
-}
-func (mw *MongoWrapper) DeleteDocumentByID(collection string, id primitive.ObjectID, ctx *mongo.SessionContext) (interface{}, error) {
-	return mw.db.Collection(collection).DeleteOne(*ctx, bson.M{"_id": id})
+	return err
 }
 
-func (mw *MongoWrapper) convertMapToBsonD(newFieldsAndValues *map[string]string) *bson.D {
-	var changes bson.D
-	for k, v := range *newFieldsAndValues {
-		changes = append(changes, bson.E{Key: k, Value: v}) //appending the fields that are going to be changed to the document
+func (mw *MongoModifier) Delete(data types.Type) error {
+	id, err := data.PrimitiveID()
+	if err != nil {
+		return err
 	}
-	return &changes
+	_, err = mw.client.Client.Database(mw.db).Collection(mw.collection).DeleteOne(context.Background(), bson.M{"_id": id})
+	return err
 }
