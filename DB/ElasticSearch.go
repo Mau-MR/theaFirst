@@ -27,15 +27,18 @@ func NewElasticModifier(connection *connection.ElasticConnection, db, index stri
 
 //Insert inserts a struct to the specific index and with the given id, if not provided "" elasticsearch generates one id
 func (em *ElasticModifier) Insert(data types.Type) error {
+	id := data.StringID()
+	data.SetID("") //The ID is errased since elasticsearch doesnt allow the keyword _id into the body of a document
 	res, err := em.client.Client.Index(
 		em.index, esutil.NewJSONReader(data),
-		em.client.Client.Index.WithDocumentID(data.StringID()),
+		em.client.Client.Index.WithDocumentID(id), //Assigning the specific id
 	)
 	if err != nil {
 		return err
 	}
 	if res.IsError() {
-		return fmt.Errorf("Insert(): elasticError: %v", res.Status())
+		resInfo := res.String()
+		return fmt.Errorf("Insert(): elasticError: %v:", resInfo)
 	}
 	return err
 }

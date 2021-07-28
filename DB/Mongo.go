@@ -5,7 +5,9 @@ import (
 	"github.com/Mau-MR/theaFirst/connection"
 	"github.com/Mau-MR/theaFirst/data/types"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"log"
 )
 
 type MongoModifier struct {
@@ -49,7 +51,10 @@ func (mw *MongoModifier) Transaction(callback callback) (interface{}, error) {
 
 //Insert inserts and struct on the specified db and collection returns the response of the insertion and an error in case of failure
 func (mw *MongoModifier) Insert(data types.Type) error {
-	_, err := mw.client.Client.Database(mw.db).Collection(mw.collection).InsertOne(context.Background(), data)
+	res, err := mw.client.Client.Database(mw.db).Collection(mw.collection).InsertOne(context.Background(), data)
+	id := res.InsertedID.(primitive.ObjectID).Hex()
+	data.SetID(id)
+	log.Println(data.StringID())
 	return err
 }
 
