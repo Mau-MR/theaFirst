@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/Mau-MR/theaFirst/connection"
 	"github.com/Mau-MR/theaFirst/data"
 	"github.com/Mau-MR/theaFirst/data/handlers"
@@ -9,6 +10,7 @@ import (
 	"github.com/Mau-MR/theaFirst/utils"
 	"log"
 	"net/http"
+	"time"
 )
 
 type Binnacles struct {
@@ -91,6 +93,13 @@ func (bs *Binnacles) CreateCell(rw http.ResponseWriter, r *http.Request) {
 		bs.l.Println("Missing fields or validation error for cell", cell)
 		return
 	}
+	err = bs.validateCell(&cell.Cell)
+	if err != nil {
+		bs.l.Println("invalid cell content")
+		rw.WriteHeader(http.StatusInternalServerError)
+		utils.ToJSON(utils.GenericError{Message: "Bad format for binnacle cell"}, rw)
+		return
+	}
 	err = bs.BinnacleDB.CreateCell(cell)
 	if err != nil {
 		bs.l.Println("Unable to search for binnacle")
@@ -102,4 +111,19 @@ func (bs *Binnacles) CreateCell(rw http.ResponseWriter, r *http.Request) {
 	utils.ToJSON(data.NewSuccessfulRequest(), rw)
 	bs.l.Println("Successfully added cell")
 	return
+}
+
+//Hardcoded for quickly delivery
+func (bs *Binnacles) validateCell(cell *types.BinnacleCell) error {
+	//Validate dates
+	_, err := validateTime(cell.Date)
+	_, err = validateTime(cell.NextAppointment)
+	if err != nil {
+		return fmt.Errorf("Invalid date")
+	}
+	err = bs.BinnacleDB.ValidateCell(cell)
+	return err
+}
+func validateTime(date string) (time.Time, error) {
+	return time.Parse(time.RFC3339, date)
 }
