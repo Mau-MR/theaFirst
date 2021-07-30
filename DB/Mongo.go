@@ -12,16 +12,14 @@ import (
 
 type MongoModifier struct {
 	client     *connection.MongoConnection
-	db         string
-	collection string
+	collection *mongo.Collection
 }
 type callback func(mongo.SessionContext) (interface{}, error)
 
 //New gets the mongo URI for a db and returns a MongoModifier with a client inside and a error in case of the failure of the connection
 func (mw *MongoModifier) New(connection *connection.MongoConnection, db, collection string) {
 	mw.client = connection
-	mw.db = db
-	mw.collection = collection
+	mw.collection = mw.client.Client.Database(db).Collection(collection)
 }
 func (mw *MongoModifier) Push(data types.Type) error {
 	//Hard coded for this time just to deliver this feature as quick as posible
@@ -30,10 +28,9 @@ func (mw *MongoModifier) Push(data types.Type) error {
 		return err
 	}
 	cell := data.EmptyClone()
-	log.Println(cell.StringID())
 	change := bson.M{"$push": bson.M{"records": cell}}
 	filter := bson.M{"_id": id}
-	_, err = mw.client.Client.Database(mw.db).Collection(mw.collection).UpdateOne(context.Background(), filter, change)
+	_, err = mw.collection.UpdateOne(context.Background(), filter, change)
 	if err != nil {
 		return err
 	}
@@ -67,7 +64,7 @@ func (mw *MongoModifier) Transaction(callback callback) (interface{}, error) {
 
 //Insert inserts and struct on the specified db and collection returns the response of the insertion and an error in case of failure
 func (mw *MongoModifier) Insert(data types.Type) error {
-	res, err := mw.client.Client.Database(mw.db).Collection(mw.collection).InsertOne(context.Background(), data)
+	res, err := mw.collection.InsertOne(context.Background(), data)
 	id := res.InsertedID.(primitive.ObjectID).Hex()
 	data.SetID(id)
 	log.Println(data.StringID())
@@ -82,7 +79,7 @@ func (mw *MongoModifier) SearchFields(data types.Type) ([]types.Type, error) {
 		doc = append(doc, bson.E{Key: key, Value: val})
 	}
 	newType := data.EmptyClone()
-	err := mw.client.Client.Database(mw.db).Collection(mw.collection).FindOne(context.Background(), doc).Decode(newType)
+	err := mw.collection.FindOne(context.Background(), doc).Decode(newType)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +96,7 @@ func (mw *MongoModifier) SearchID(data types.Type) (types.Type, error) {
 		log.Println(id)
 		doc = append(doc, bson.E{Key: field, Value: id})
 	}
-	err = mw.client.Client.Database(mw.db).Collection(mw.collection).FindOne(context.Background(), doc).Decode(newType)
+	err = mw.collection.FindOne(context.Background(), doc).Decode(newType)
 	return newType, err
 }
 
@@ -108,7 +105,7 @@ func (mw *MongoModifier) Update(data types.Type) error {
 	if err != nil {
 		return err
 	}
-	_, err = mw.client.Client.Database(mw.db).Collection(mw.collection).UpdateOne(
+	_, err = mw.collection.UpdateOne(
 		context.Background(),
 		bson.M{"_id": id},
 		bson.D{{
@@ -124,6 +121,6 @@ func (mw *MongoModifier) Delete(data types.Type) error {
 	if err != nil {
 		return err
 	}
-	_, err = mw.client.Client.Database(mw.db).Collection(mw.collection).DeleteOne(context.Background(), bson.M{"_id": id})
+	_, err = mw.collection.DeleteOne(context.Background(), bson.M{"_id": id})
 	return err
 }
