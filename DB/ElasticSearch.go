@@ -25,6 +25,10 @@ func NewElasticModifier(connection *connection.ElasticConnection, db, index stri
 	}
 }
 
+func (em *ElasticModifier) Push(data types.Type) error {
+	return nil
+}
+
 //Insert inserts a struct to the specific index and with the given id, if not provided "" elasticsearch generates one id
 func (em *ElasticModifier) Insert(data types.Type) error {
 	id := data.StringID()

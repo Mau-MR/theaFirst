@@ -4,6 +4,7 @@ import (
 	"github.com/Mau-MR/theaFirst/connection"
 	"github.com/Mau-MR/theaFirst/data"
 	"github.com/Mau-MR/theaFirst/data/handlers"
+	"github.com/Mau-MR/theaFirst/data/httpRequest"
 	"github.com/Mau-MR/theaFirst/data/types"
 	"github.com/Mau-MR/theaFirst/utils"
 	"log"
@@ -79,5 +80,26 @@ func (bs *Binnacles) UpdateBinnacle(rw http.ResponseWriter, r *http.Request) {
 
 }
 func (bs *Binnacles) CreateCell(rw http.ResponseWriter, r *http.Request) {
-
+	cell := &httpRequest.InsertBinnacleCell{}
+	err := utils.ParseRequest(cell, r.Body, rw)
+	if err != nil {
+		bs.l.Println("Error parsing cell")
+		return
+	}
+	err = bs.validation.ValidateRequest(cell, rw)
+	if err != nil {
+		bs.l.Println("Missing fields or validation error for cell", cell)
+		return
+	}
+	err = bs.BinnacleDB.CreateCell(cell)
+	if err != nil {
+		bs.l.Println("Unable to search for binnacle")
+		rw.WriteHeader(http.StatusInternalServerError)
+		utils.ToJSON(utils.GenericError{Message: "Unable to search binnacle on DB"}, rw)
+		return
+	}
+	rw.WriteHeader(http.StatusOK)
+	utils.ToJSON(data.NewSuccessfulRequest(), rw)
+	bs.l.Println("Successfully added cell")
+	return
 }

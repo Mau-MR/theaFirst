@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Mau-MR/theaFirst/DB"
 	"github.com/Mau-MR/theaFirst/connection"
+	"github.com/Mau-MR/theaFirst/data/httpRequest"
 	"github.com/Mau-MR/theaFirst/data/types"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
@@ -45,8 +46,14 @@ func (bdb *BinnacleDB) SearchBinnacle(costumerID string) (*types.Binnacle, error
 }
 
 //CreateCell inserts a cell to the specified binnacle
-func (bdb *BinnacleDB) CreateCell(binnacleID primitive.ObjectID, cell *types.BinnacleCell) error {
-	return nil
+func (bdb *BinnacleDB) CreateCell(cell *httpRequest.InsertBinnacleCell) error {
+	//Creating the cellID for the register
+	cell.Cell.CellID = primitive.NewObjectID().Hex()
+	log.Println(cell.PrimitiveID())
+	log.Println(cell.Cell.CellID)
+	log.Println(cell.Cell)
+	err := bdb.mongoBinnacles.Push(cell)
+	return err
 }
 
 //UpdateCell updates the specified cell of a binnacle

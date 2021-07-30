@@ -6,16 +6,16 @@ import (
 )
 
 type BinnacleCell struct {
-	CellID          string              `json:"cellID" bson:"cellID"`
-	Date            primitive.Timestamp `json:"date" bson:"date"`
-	NextAppointment primitive.Timestamp `json:"nextAppointment" bson:"nextAppointment"`
-	ServiceID       string              `json:"serviceID" bson:"serviceID"`
-	Mapping         []int               `json:"mapping" bson:"mapping"`
-	LashID          string              `json:"lashID" bson:"lashID"`
-	NumberLashStart int                 `json:"nLashStart" bson:"nLashStart"`
-	NumberLashEnd   int                 `json:"nLashEnd" bson:"nLashEnd"`
-	EmployeeID      string              `json:"employeeID" bson:"employeeID"`
-	Observations    string              `json:"observations" bson:"observations"`
+	CellID          string `json:"cellID" bson:"cellID"`
+	Date            string `json:"date" bson:"date" validate:"required"`                       //TODO validate date
+	NextAppointment string `json:"nextAppointment" bson:"nextAppointment" validate:"required"` //Validate date
+	ServiceID       string `json:"serviceID" bson:"serviceID" validate:"required"`
+	Mapping         []int  `json:"mapping" bson:"mapping" validate:"required"`
+	LashID          string `json:"lashID" bson:"lashID" validate:"required"`
+	NumberLashStart int    `json:"nLashStart" bson:"nLashStart" validate:"required"`
+	NumberLashEnd   int    `json:"nLashEnd" bson:"nLashEnd" validate:"required"`
+	EmployeeID      string `json:"employeeID" bson:"employeeID" validate:"required"`
+	Observations    string `json:"observations" bson:"observations" validate:"required"`
 }
 
 func (bc *BinnacleCell) FromJSON(message json.RawMessage) error {
@@ -36,7 +36,6 @@ func (bc *BinnacleCell) SearchTerm() string {
 }
 
 func (bc *BinnacleCell) SearchIDS() (*map[string]primitive.ObjectID, error) {
-	//TODO
 	return nil, nil
 }
 func (bc *BinnacleCell) SearchFields() *map[string]string {

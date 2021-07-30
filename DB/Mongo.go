@@ -23,6 +23,22 @@ func (mw *MongoModifier) New(connection *connection.MongoConnection, db, collect
 	mw.db = db
 	mw.collection = collection
 }
+func (mw *MongoModifier) Push(data types.Type) error {
+	//Hard coded for this time just to deliver this feature as quick as posible
+	id, err := data.PrimitiveID()
+	if err != nil {
+		return err
+	}
+	cell := data.EmptyClone()
+	log.Println(cell.StringID())
+	change := bson.M{"$push": bson.M{"records": cell}}
+	filter := bson.M{"_id": id}
+	_, err = mw.client.Client.Database(mw.db).Collection(mw.collection).UpdateOne(context.Background(), filter, change)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 /*
 //Transaction makes an ACID transaction for MongoDB
