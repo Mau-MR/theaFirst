@@ -30,7 +30,7 @@ func (c *Costumers) CreateCostumer(rw http.ResponseWriter, r *http.Request) {
 	costumer := &types.Costumer{}
 	err := utils.ParseRequest(costumer, r.Body, rw)
 	if err != nil {
-		c.l.Println("Error parsing account", err)
+		c.l.Println("Error parsing costumer", err)
 		return
 	}
 	err = c.validation.ValidateRequest(costumer, rw)
@@ -56,11 +56,14 @@ func (c *Costumers) CreateCostumer(rw http.ResponseWriter, r *http.Request) {
 
 func (c *Costumers) SearchCostumer(rw http.ResponseWriter, r *http.Request) {
 	sCostumer := &httpRequest.SearchCostumer{}
+	c.l.Println(r.Body)
 	err := utils.ParseRequest(sCostumer, r.Body, rw)
 	if err != nil {
 		c.l.Println("Error parsing account", err)
 		return
 	}
+	c.l.Println(sCostumer.Name)
+
 	costumers, err := c.CostumerDB.SearchCostumer(sCostumer)
 	if err != nil {
 		c.l.Println("Unable to search Costumer", err)
@@ -73,5 +76,6 @@ func (c *Costumers) SearchCostumer(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusOK)
 	utils.ToJSON(&costumers, rw)
 	c.l.Println("Successfully searched costumer")
+	c.l.Println(&costumers)
 	return
 }
