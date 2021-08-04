@@ -1,12 +1,12 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"github.com/Mau-MR/theaFirst/connection"
 	"github.com/Mau-MR/theaFirst/handlers"
 	"github.com/Mau-MR/theaFirst/utils"
+	gorillaHandler "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -32,17 +32,22 @@ func main() {
 	//Post router
 	postRouter := mux.Methods(http.MethodPost).Subrouter()
 	postRouter.HandleFunc("/costumer", costumers.CreateCostumer)
+	postRouter.HandleFunc("/costumers", costumers.SearchCostumer)
 	postRouter.HandleFunc("/binnacle/cell", binnacles.CreateCell)
 	postRouter.HandleFunc("/binnacle", binnacles.CreateBinnacle)
 	//Get router
 	getRouter := mux.Methods(http.MethodGet).Subrouter()
-	getRouter.HandleFunc("/costumer", costumers.SearchCostumer)
 	getRouter.HandleFunc("/binnacle", binnacles.SearchBinnacle)
 	//Update router TODO: CREATE THE RELATED METHODS
 	//server related configuration
+
+	cOrigins := gorillaHandler.AllowedOrigins([]string{"http://localhost:3000"})
+	cHeaders := gorillaHandler.AllowedHeaders([]string{"content-type"})
+	cCredentials := gorillaHandler.AllowCredentials()
+	ch := gorillaHandler.CORS(cOrigins, cHeaders, cCredentials)
 	server := http.Server{
 		Addr:         fmt.Sprintf("localhost:%d", *port),
-		Handler:      mux,
+		Handler:      ch(mux),
 		ErrorLog:     l,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
@@ -54,6 +59,7 @@ func main() {
 			l.Fatal("Error starting the server: ", err)
 		}
 	}()
+
 	//TODO: CHECK IF THIS CODE IS TRULY EXECUTED
 	//get sigterm or interrupt to gracefully end the server
 	c := make(chan os.Signal, 1)
@@ -63,10 +69,12 @@ func main() {
 	sig := <-c
 	l.Println("Got signal", sig)
 	//shutdown the server and waiting 30 seconds for current operations to complete
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
-	if err := server.Shutdown(ctx); err != nil {
-		l.Fatal("Error shutting down the server", err)
-	}
+	/*
+		ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+		if err := server.Shutdown(ctx); err != nil {
+			l.Fatal("Error shutting down the server", err)
+		}
+	*/
 }
 
 func CreateConnections(l *log.Logger) (connection.Connection, connection.Connection) {
