@@ -15,6 +15,7 @@ type Type interface {
 	SearchTerm() string
 	//SearchFields used for mongo searching by specific fields
 	SearchFields() *map[string]string
+	SearchIDS() (*map[string]primitive.ObjectID, error)
 	Clone() Type
 	EmptyClone() Type
 	PrimitiveID() (primitive.ObjectID, error)

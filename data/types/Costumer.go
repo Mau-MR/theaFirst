@@ -35,6 +35,9 @@ func (c *Costumer) SearchTerm() string {
 	return ""
 }
 
+func (c *Costumer) SearchIDS() (*map[string]primitive.ObjectID, error) {
+	return nil, nil
+}
 func (c *Costumer) SearchFields() *map[string]string {
 	m := &map[string]string{
 		"phone": c.Phone,
