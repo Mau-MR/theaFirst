@@ -30,7 +30,7 @@ func (c *Costumers) CreateCostumer(rw http.ResponseWriter, r *http.Request) {
 	costumer := &types.Costumer{}
 	err := utils.ParseRequest(costumer, r.Body, rw)
 	if err != nil {
-		c.l.Println("Error parsing account", err)
+		c.l.Println("Error parsing costumer", err)
 		return
 	}
 	err = c.validation.ValidateRequest(costumer, rw)

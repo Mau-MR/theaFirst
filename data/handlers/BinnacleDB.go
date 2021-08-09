@@ -68,6 +68,7 @@ func (bdb *BinnacleDB) ValidateCell(cell *types.BinnacleCell) error {
 	err := bdb.conn.Client.Database("Thea").Collection("products").FindOne(context.Background(), bson.M{"ID": cell.LashID}).Decode(prod)
 	if err != nil {
 		return fmt.Errorf("Unable to find related product")
+
 	}
 	emp := &types.Employee{}
 	err = bdb.conn.Client.Database("Thea").Collection("employees").FindOne(context.Background(), bson.M{"ID": cell.EmployeeID}).Decode(emp)
