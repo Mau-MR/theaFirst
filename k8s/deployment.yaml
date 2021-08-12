@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: thea-server
+  name: thea
+  namespace: service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      run: thea
+  template:
+    metadata:
+      labels:
+        run: thea
+    spec:
+      containers:
+        - image: gcr.io/${PROJECT_ID}/keybons:latest
+          name: keybons
+          ports:
+            - containerPort: 8080
