@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: theaservice
+  namespace: service
+spec:
+  selector:
+    run: thea-server
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
