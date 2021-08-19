@@ -15,8 +15,31 @@ spec:
       labels:
         run: thea
     spec:
+      imagePullSecrets:
+        - name: gcr-secret
       containers:
-        - image: gcr.io/${PROJECT_ID}/keybons:latest
+        - image: gcr.io/keybons/keybons:latest
           name: keybons
           ports:
             - containerPort: 8080
+          env:
+            - name: MONGOURI
+              valueFrom:
+                secretKeyRef:
+                  name: theacred
+                  key: mongouri
+            - name: EUSER
+              valueFrom:
+                secretKeyRef:
+                  name: theacred
+                  key: elasticuser
+            - name: EPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: theacred
+                  key: elasticpwd
+            - name: ELASTICURI
+              valueFrom:
+                secretKeyRef:
+                  name: theacred
+                  key: elasticuri

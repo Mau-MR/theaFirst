@@ -5,7 +5,7 @@ metadata:
   namespace: service
 spec:
   selector:
-    run: thea-server
+    run: thea
   ports:
     - protocol: TCP
       port: 80
