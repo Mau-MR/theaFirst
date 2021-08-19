@@ -59,6 +59,7 @@ func main() {
 			l.Fatal("Error starting the server: ", err)
 		}
 	}()
+	l.Println("Server started successfully!")
 
 	//TODO: CHECK IF THIS CODE IS TRULY EXECUTED
 	//get sigterm or interrupt to gracefully end the server
