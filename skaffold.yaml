@@ -1,0 +1,26 @@
+apiVersion: skaffold/v2beta21
+kind: Config
+metadata:
+  name: theafirst
+build:
+  tagPolicy:
+    sha256: { }
+  artifacts:
+    - image: gcr.io/keybons/keybons
+      context: .
+      sync:
+        infer:
+          - '**/*'
+deploy:
+  kubectl:
+    manifests:
+      - k8s/*.yaml
+profiles:
+  - name: cloud-build
+    build:
+      googleCloudBuild: { }
+portForward:
+  - resourceType: service
+    resourceName: theaservice
+    port: 80
+    localPort: 8080

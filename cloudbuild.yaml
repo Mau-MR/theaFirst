@@ -1,16 +1,8 @@
-options:
-  env:
-    - GO111MODULE=on
-    - GOPROXY=https://proxy.golang.org
 steps:
-  - name: 'gcr.io/cloud-builders/docker'
-    args: [ 'build', '-t', 'gcr.io/${PROJECT_ID}/keybons:v1.0.0', '.' ]
-  - name: 'gcr.io/cloud-builders/docker'
-    args: [ 'push', 'gcr.io/${PROJECT_ID}/keybons:v1.0.0' ]
-  - name: "gcr.io/cloud-builders/gke-deploy"
-    args:
-      - run
-      - --filename=k8s.yaml
-      - --image=gcr.io/${PROJECT_ID}/keybons:v1.0.0
-      - --location=${_CLOUDSDK_COMPUTE_ZONE}
-      - --cluster=${_CLOUDSDK_CONTAINER_CLUSTER}
+  - name: 'gcr.io/k8s-skaffold/skaffold'
+    args: [
+        'gcloud', 'container', 'clusters', 'get-credentials', 'keybons',
+        '--zone', 'us-west2-b', '--project', 'keybons'
+    ]
+  - name: 'gcr.io/k8s-skaffold/skaffold'
+    args: [ 'skaffold','run' ]
